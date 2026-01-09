@@ -15,6 +15,7 @@ export async function hard_link(src: string, dest: string): Promise<void> {
       await rmRF(destPath)
       await hard_link(srcPath, destPath)
     } else {
+      await fs.unlink(destPath)
       await fs.link(srcPath, destPath)
     }
   }

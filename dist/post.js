@@ -2936,6 +2936,7 @@ async function hard_link(src, dest) {
       await (0, import_io.rmRF)(destPath);
       await hard_link(srcPath, destPath);
     } else {
+      await fs.promises.unlink(destPath);
       await fs.promises.link(srcPath, destPath);
     }
   }
