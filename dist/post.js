@@ -2928,11 +2928,11 @@ var import_io_util = __toESM(require_io_util());
 var import_io = __toESM(require_io());
 async function hard_link(src, dest) {
   const entries = await fs.promises.readdir(src, { withFileTypes: true });
+  await (0, import_io.rmRF)(dest);
   await (0, import_io.mkdirP)(dest);
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    await (0, import_io.rmRF)(destPath);
     if (entry.isDirectory()) {
       await hard_link(srcPath, destPath);
     } else {
