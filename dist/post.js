@@ -2,6 +2,7 @@
 
 var crypto = require('crypto');
 var path = require('path');
+var fs = require('fs');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
@@ -523,7 +524,7 @@ var require_file_command = __commonJS({
     };
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
-    var fs = __importStar(__require("fs"));
+    var fs2 = __importStar(__require("fs"));
     var os = __importStar(__require("os"));
     var uuid_1 = (init_esm_node(), __toCommonJS(esm_node_exports));
     var utils_1 = require_utils();
@@ -532,10 +533,10 @@ var require_file_command = __commonJS({
       if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
       }
-      if (!fs.existsSync(filePath)) {
+      if (!fs2.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+      fs2.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
         encoding: "utf8"
       });
     }
@@ -2264,12 +2265,12 @@ var require_io_util = __commonJS({
     var _a;
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
-    var fs = __importStar(__require("fs"));
+    var fs2 = __importStar(__require("fs"));
     var path2 = __importStar(__require("path"));
-    _a = fs.promises, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
+    _a = fs2.promises, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
     exports.IS_WINDOWS = process.platform === "win32";
     exports.UV_FS_O_EXLOCK = 268435456;
-    exports.READONLY = fs.constants.O_RDONLY;
+    exports.READONLY = fs2.constants.O_RDONLY;
     function exists2(fsPath) {
       return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -2486,7 +2487,7 @@ var require_io = __commonJS({
             }
           }
         }
-        yield mkdirP2(path2.dirname(dest));
+        yield mkdirP3(path2.dirname(dest));
         yield ioUtil.rename(source, dest);
       });
     }
@@ -2511,13 +2512,13 @@ var require_io = __commonJS({
       });
     }
     exports.rmRF = rmRF2;
-    function mkdirP2(fsPath) {
+    function mkdirP3(fsPath) {
       return __awaiter(this, void 0, void 0, function* () {
         assert_1.ok(fsPath, "a path argument must be provided");
         yield ioUtil.mkdir(fsPath, { recursive: true });
       });
     }
-    exports.mkdirP = mkdirP2;
+    exports.mkdirP = mkdirP3;
     function which(tool, check) {
       return __awaiter(this, void 0, void 0, function* () {
         if (!tool) {
@@ -2595,7 +2596,7 @@ var require_io = __commonJS({
         if (currentDepth >= 255)
           return;
         currentDepth++;
-        yield mkdirP2(destDir);
+        yield mkdirP3(destDir);
         const files = yield ioUtil.readdir(sourceDir);
         for (const fileName of files) {
           const srcFile = `${sourceDir}/${fileName}`;
@@ -2862,13 +2863,13 @@ var require_loglevel = __commonJS({
 
 // src/post.ts
 var import_core = __toESM(require_core());
-var import_io = __toESM(require_io());
+var import_io2 = __toESM(require_io());
 
 // src/lib/getVars.ts
 var core = __toESM(require_core());
 var { GITHUB_REPOSITORY, RUNNER_TOOL_CACHE } = process.env;
 var CWD = process.cwd();
-var STRATEGIES = ["copy-immutable", "copy", "move"];
+var STRATEGIES = ["copy-immutable", "copy", "move", "hard-link"];
 var getVars = () => {
   if (!RUNNER_TOOL_CACHE) {
     throw new TypeError("Expected RUNNER_TOOL_CACHE environment variable to be defined.");
@@ -2922,24 +2923,45 @@ var log_default = import_loglevel.default;
 
 // src/post.ts
 var import_io_util = __toESM(require_io_util());
+
+// src/lib/tools.ts
+var import_io = __toESM(require_io());
+async function hard_link(src, dest) {
+  const entries = await fs.promises.readdir(src, { withFileTypes: true });
+  await (0, import_io.mkdirP)(dest);
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      await hard_link(srcPath, destPath);
+    } else {
+      await fs.promises.link(srcPath, destPath);
+    }
+  }
+}
+
+// src/post.ts
 async function post() {
   try {
     const { cacheDir, targetPath, cachePath, options } = getVars();
-    await (0, import_io.mkdirP)(cacheDir);
+    await (0, import_io2.mkdirP)(cacheDir);
     switch (options.strategy) {
       case "copy-immutable":
         if (await (0, import_io_util.exists)(cachePath)) {
           log_default.info(`Cache already exists, skipping`);
           return;
         }
-        await (0, import_io.cp)(targetPath, cachePath, { copySourceDirectory: true, recursive: true });
+        await (0, import_io2.cp)(targetPath, cachePath, { copySourceDirectory: true, recursive: true });
         break;
       case "copy":
-        await (0, import_io.rmRF)(cachePath);
-        await (0, import_io.cp)(targetPath, cachePath, { copySourceDirectory: true, recursive: true });
+        await (0, import_io2.rmRF)(cachePath);
+        await (0, import_io2.cp)(targetPath, cachePath, { copySourceDirectory: true, recursive: true });
+        break;
+      case "hard-link":
+        await hard_link(targetPath, cachePath);
         break;
       case "move":
-        await (0, import_io.mv)(targetPath, cachePath, { force: true });
+        await (0, import_io2.mv)(targetPath, cachePath, { force: true });
         break;
     }
     log_default.info(`Cache saved to ${cachePath} with ${options.strategy} strategy`);

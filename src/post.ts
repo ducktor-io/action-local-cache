@@ -27,7 +27,7 @@ async function post(): Promise<void> {
         break
       case 'hard-link':
         await hard_link(targetPath, cachePath)
-        break;
+        break
       case 'move':
         await mv(targetPath, cachePath, { force: true })
         break
