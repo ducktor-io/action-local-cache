@@ -2271,7 +2271,7 @@ var require_io_util = __commonJS({
     exports.IS_WINDOWS = process.platform === "win32";
     exports.UV_FS_O_EXLOCK = 268435456;
     exports.READONLY = fs2.constants.O_RDONLY;
-    function exists2(fsPath) {
+    function exists3(fsPath) {
       return __awaiter(this, void 0, void 0, function* () {
         try {
           yield exports.stat(fsPath);
@@ -2284,7 +2284,7 @@ var require_io_util = __commonJS({
         return true;
       });
     }
-    exports.exists = exists2;
+    exports.exists = exists3;
     function isDirectory(fsPath, useStat = false) {
       return __awaiter(this, void 0, void 0, function* () {
         const stats = useStat ? yield exports.stat(fsPath) : yield exports.lstat(fsPath);
@@ -2922,10 +2922,11 @@ if (process.env.LOG_LEVEL) {
 var log_default = import_loglevel.default;
 
 // src/post.ts
-var import_io_util = __toESM(require_io_util());
+var import_io_util2 = __toESM(require_io_util());
 
 // src/lib/tools.ts
 var import_io = __toESM(require_io());
+var import_io_util = __toESM(require_io_util());
 async function hard_link(src, dest) {
   const entries = await fs.promises.readdir(src, { withFileTypes: true });
   await (0, import_io.mkdirP)(dest);
@@ -2936,7 +2937,9 @@ async function hard_link(src, dest) {
       await (0, import_io.rmRF)(destPath);
       await hard_link(srcPath, destPath);
     } else {
-      await fs.promises.unlink(destPath);
+      if (await (0, import_io_util.exists)(destPath)) {
+        await fs.promises.unlink(destPath);
+      }
       await fs.promises.link(srcPath, destPath);
     }
   }
@@ -2949,7 +2952,7 @@ async function post() {
     await (0, import_io2.mkdirP)(cacheDir);
     switch (options.strategy) {
       case "copy-immutable":
-        if (await (0, import_io_util.exists)(cachePath)) {
+        if (await (0, import_io_util2.exists)(cachePath)) {
           log_default.info(`Cache already exists, skipping`);
           return;
         }
