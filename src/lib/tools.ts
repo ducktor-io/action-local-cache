@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import { join } from 'path'
-import { mkdirP } from '@actions/io'
+import { mkdirP, rmRF } from '@actions/io'
 
 export async function hard_link(src: string, dest: string): Promise<void> {
   const entries = await fs.readdir(src, { withFileTypes: true })
@@ -10,6 +10,8 @@ export async function hard_link(src: string, dest: string): Promise<void> {
   for (const entry of entries) {
     const srcPath = join(src, entry.name)
     const destPath = join(dest, entry.name)
+
+    await rmRF(destPath)
 
     if (entry.isDirectory()) {
       await hard_link(srcPath, destPath)
