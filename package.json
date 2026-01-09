@@ -27,7 +27,7 @@
     "self-hosted",
     "runner"
   ],
-  "author": "Masterworks",
+  "author": "Jellofishi",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "1.10.0",
