@@ -2938,7 +2938,11 @@ async function hard_link(src, dest) {
       if (await (0, import_io_util.exists)(destPath)) {
         await fs.promises.unlink(destPath);
       }
-      await fs.promises.link(srcPath, destPath);
+      try {
+        await fs.promises.link(srcPath, destPath);
+      } catch {
+        await fs.promises.copyFile(srcPath, destPath);
+      }
     }
   }
 }

@@ -19,7 +19,11 @@ export async function hard_link(src: string, dest: string): Promise<void> {
       if (await exists(destPath)) {
         await fs.unlink(destPath)
       }
-      await fs.link(srcPath, destPath)
+      try {
+        await fs.link(srcPath, destPath)
+      } catch {
+        await fs.copyFile(srcPath, destPath)
+      }
     }
   }
 }
