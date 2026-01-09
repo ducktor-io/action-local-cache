@@ -5,6 +5,7 @@ import { exists } from '@actions/io/lib/io-util'
 import { getVars } from './lib/getVars'
 import { isErrorLike } from './lib/isErrorLike'
 import log from './lib/log'
+import { hard_link } from './lib/tools'
 
 async function main(): Promise<void> {
   try {
@@ -19,6 +20,9 @@ async function main(): Promise<void> {
             copySourceDirectory: false,
             recursive: true,
           })
+          break
+        case 'hard-link':
+          await hard_link(cachePath, targetPath)
           break
         case 'move':
           await mv(cachePath, targetPath, { force: true })

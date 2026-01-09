@@ -5,7 +5,7 @@ import * as core from '@actions/core'
 const { GITHUB_REPOSITORY, RUNNER_TOOL_CACHE } = process.env
 const CWD = process.cwd()
 
-export const STRATEGIES = ['copy-immutable', 'copy', 'move'] as const
+export const STRATEGIES = ['copy-immutable', 'copy', 'move', 'hard-link'] as const
 export type Strategy = typeof STRATEGIES[number]
 
 type Vars = {

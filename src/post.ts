@@ -5,6 +5,7 @@ import { getVars } from './lib/getVars'
 import { isErrorLike } from './lib/isErrorLike'
 import log from './lib/log'
 import { exists } from '@actions/io/lib/io-util'
+import { hard_link } from './lib/tools'
 
 async function post(): Promise<void> {
   try {
@@ -24,6 +25,9 @@ async function post(): Promise<void> {
         await rmRF(cachePath)
         await cp(targetPath, cachePath, { copySourceDirectory: true, recursive: true })
         break
+      case 'hard-link':
+        await hard_link(targetPath, cachePath)
+        break;
       case 'move':
         await mv(targetPath, cachePath, { force: true })
         break
