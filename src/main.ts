@@ -22,7 +22,7 @@ async function main(): Promise<void> {
           })
           break
         case 'hard-link':
-          await hard_link(cachePath, targetPath)
+          await hard_link(cachePath, targetPath, options.exclude)
           break
         case 'move':
           await mv(cachePath, targetPath, { force: true })

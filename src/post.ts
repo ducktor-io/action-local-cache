@@ -26,7 +26,7 @@ async function post(): Promise<void> {
         await cp(targetPath, cachePath, { copySourceDirectory: true, recursive: true })
         break
       case 'hard-link':
-        await hard_link(targetPath, cachePath)
+        await hard_link(targetPath, cachePath, options.exclude)
         break
       case 'move':
         await mv(targetPath, cachePath, { force: true })

@@ -11,6 +11,10 @@ inputs:
     description: 'Caching mechanism to be used'
     required: false
     default: 'move'
+  exclude:
+    description: 'A list of folders to be excluded (only for hard-link strategy)'
+    required: false
+    default: ''
 outputs:
   cache-hit:
     description: 'A boolean value to indicate if cache was found and restored'

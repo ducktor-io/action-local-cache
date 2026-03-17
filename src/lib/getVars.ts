@@ -13,8 +13,9 @@ type Vars = {
   cachePath: string
   options: {
     key: string
-    path: string,
+    path: string
     strategy: Strategy
+    exclude: string[]
   }
   targetDir: string
   targetPath: string
@@ -33,6 +34,11 @@ export const getVars = (): Vars => {
     key: core.getInput('key') || 'no-key',
     path: core.getInput('path'),
     strategy: core.getInput('strategy') as Strategy,
+    exclude: core
+      .getInput('exclude')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => s !== ''),
   }
 
   if (!options.path) {
